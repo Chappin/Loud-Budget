@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Loud Budget Check</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f9f8f5; --surface: #ffffff; --border: #e2e0da;
+      --border-strong: #c8c6be; --text-primary: #1a1916;
+      --text-secondary: #6b6860; --text-tertiary: #9e9c96;
+      --danger: #b93b2b; --success: #2a6e45;
+      --radius-md: 10px; --radius-lg: 16px;
+    }
+    body { font-family: 'DM Sans', system-ui, sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+    .page { max-width: 520px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+
+    /* Saved banner */
+    .saved-banner { display: none; align-items: center; gap: 8px; background: #e8f3ec; border: 1px solid #a8d4b8; border-radius: var(--radius-md); padding: 10px 14px; margin-bottom: 1.5rem; font-size: 13px; color: var(--success); }
+    .saved-banner.visible { display: flex; }
+    .saved-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
+    .saved-banner-right { margin-left: auto; }
+    .clear-btn { background: none; border: none; font-family: inherit; font-size: 12px; color: var(--success); cursor: pointer; text-decoration: underline; padding: 0; }
+
+    /* Hero */
+    .hero { text-align: center; margin-bottom: 2.5rem; }
+    .hero-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 10px; }
+    .hero-title { font-family: 'DM Serif Display', Georgia, serif; font-size: 36px; font-weight: 400; color: var(--text-primary); line-height: 1.15; margin-bottom: 10px; }
+    .hero-sub { font-size: 15px; color: var(--text-secondary); line-height: 1.5; }
+
+    /* Form */
+    .section { margin-bottom: 1.75rem; }
+    .section-label { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 10px; display: block; }
+    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .input-group { display: flex; flex-direction: column; gap: 5px; }
+    input[type="number"], input[type="text"], input[type="email"] { width: 100%; height: 44px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); color: var(--text-primary); font-family: 'DM Sans', system-ui, sans-serif; font-size: 15px; padding: 0 12px; outline: none; transition: border-color 0.15s; -webkit-appearance: none; }
+    input[type="number"]:focus, input[type="text"]:focus, input[type="email"]:focus { border-color: var(--text-primary); }
+    input::placeholder { color: var(--text-tertiary); }
+
+    /* Expense list */
+    .expense-list { border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface); }
+    .expense-row { display: grid; grid-template-columns: 1fr 100px 32px; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    .expense-row:last-child { border-bottom: none; }
+    .expense-row input[type="text"] { border: none; background: transparent; height: 36px; padding: 0; font-size: 14px; }
+    .expense-row input[type="text"]:focus { border: none; box-shadow: none; }
+    .expense-row input[type="number"] { height: 36px; font-size: 14px; padding: 0 10px; border-radius: 8px; }
+    .remove-btn { background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 20px; line-height: 1; padding: 0; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 6px; font-family: inherit; transition: background 0.12s, color 0.12s; }
+    .remove-btn:hover { background: #fce8e5; color: var(--danger); }
+    .add-btn { width: 100%; margin-top: 8px; background: none; border: 1px dashed var(--border-strong); border-radius: var(--radius-md); color: var(--text-secondary); font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; padding: 10px; cursor: pointer; transition: background 0.12s; }
+    .add-btn:hover { background: var(--surface); }
+
+    /* CTA */
+    .cta-btn { width: 100%; background: var(--text-primary); color: var(--bg); border: none; border-radius: var(--radius-lg); font-family: 'DM Serif Display', Georgia, serif; font-size: 18px; font-weight: 400; font-style: italic; padding: 16px; cursor: pointer; margin-top: 0.25rem; transition: opacity 0.15s; }
+    .cta-btn:hover { opacity: 0.85; }
+
+    /* Result card */
+    .result-card { display: none; margin-top: 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .result-card.visible { display: block; }
+    .card-top { background: var(--text-primary); color: var(--bg); padding: 1.5rem; }
+    .card-eyebrow { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.5; margin-bottom: 6px; }
+    .card-title { font-family: 'DM Serif Display', Georgia, serif; font-size: 24px; font-weight: 400; line-height: 1.2; margin-bottom: 4px; }
+    .card-date { font-size: 13px; opacity: 0.5; }
+    .card-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; border-bottom: 1px solid var(--border); }
+    .stat-cell { padding: 1rem; border-right: 1px solid var(--border); }
+    .stat-cell:last-child { border-right: none; }
+    .stat-cell-label { font-size: 11px; color: var(--text-tertiary); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat-cell-value { font-size: 20px; font-weight: 500; color: var(--text-primary); }
+    .stat-cell-value.danger { color: var(--danger); }
+    .stat-cell-value.success { color: var(--success); }
+    .card-body { padding: 1.25rem 1.5rem; }
+    .boundary-list { list-style: none; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 10px; }
+    .boundary-item { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.5; color: var(--text-primary); }
+    .boundary-dot { flex-shrink: 0; width: 5px; height: 5px; border-radius: 50%; background: var(--text-primary); margin-top: 7px; }
+    .boundary-item.warn .boundary-dot { background: var(--danger); }
+    .boundary-item.warn { color: var(--danger); }
+    .verdict-block { border-left: 2px solid var(--text-primary); padding: 6px 12px; margin-bottom: 1.25rem; }
+    .verdict-text { font-family: 'DM Serif Display', Georgia, serif; font-size: 16px; font-style: italic; color: var(--text-primary); line-height: 1.45; }
+    .card-footer { border-top: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .brand-handle { font-size: 12px; color: var(--text-tertiary); }
+    .copy-btn { background: none; border: 1px solid var(--border-strong); border-radius: 8px; font-family: 'DM Sans', system-ui, sans-serif; font-size: 12px; color: var(--text-secondary); padding: 7px 12px; cursor: pointer; white-space: nowrap; transition: background 0.12s; }
+    .copy-btn:hover { background: var(--bg); }
+    .copy-btn.copied { color: var(--success); border-color: var(--success); }
+
+    /* Email capture */
+    .email-capture { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin: 0 1.5rem 1.25rem; }
+    .email-capture-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; }
+    .email-capture-title { font-family: 'DM Serif Display', Georgia, serif; font-size: 18px; color: var(--text-primary); margin-bottom: 4px; line-height: 1.3; }
+    .email-capture-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.5; }
+    .email-row { display: flex; gap: 8px; }
+    .email-row input[type="email"] { flex: 1; height: 40px; font-size: 14px; }
+    .email-submit { background: var(--text-primary); color: var(--bg); border: none; border-radius: var(--radius-md); font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; font-weight: 500; padding: 0 16px; cursor: pointer; white-space: nowrap; transition: opacity 0.15s; height: 40px; }
+    .email-submit:hover { opacity: 0.85; }
+    .email-submit:disabled { opacity: 0.4; cursor: default; }
+    .email-success { display: none; font-size: 13px; color: var(--success); margin-top: 8px; font-style: italic; }
+    .email-fine-print { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; }
+
+    /* Tool divider */
+    .tool-divider { margin: 3rem 0 2.5rem; display: flex; align-items: center; gap: 1rem; }
+    .tool-divider-line { flex: 1; height: 1px; background: var(--border); }
+    .tool-divider-label { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-tertiary); white-space: nowrap; }
+
+    /* Subscription audit */
+    .audit-hero { text-align: center; margin-bottom: 2rem; }
+    .audit-hero-title { font-family: 'DM Serif Display', Georgia, serif; font-size: 28px; font-weight: 400; color: var(--text-primary); line-height: 1.2; margin-bottom: 8px; }
+    .audit-hero-sub { font-size: 15px; color: var(--text-secondary); line-height: 1.5; }
+    .sub-list { border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface); }
+    .sub-row { display: grid; grid-template-columns: 1fr 90px 110px 32px; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    .sub-row:last-child { border-bottom: none; }
+    .sub-row input[type="text"] { border: none; background: transparent; height: 36px; padding: 0; font-size: 14px; }
+    .sub-row input[type="text"]:focus { border: none; box-shadow: none; }
+    .sub-row input[type="number"] { height: 36px; font-size: 14px; padding: 0 10px; border-radius: 8px; }
+    .sub-row select { height: 36px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text-primary); font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; padding: 0 8px; outline: none; cursor: pointer; -webkit-appearance: none; appearance: none; }
+    .sub-row select:focus { border-color: var(--text-primary); }
+
+    /* Audit results */
+    .audit-wake-up { background: var(--danger); color: #fff; border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1rem; text-align: center; }
+    .wake-eyebrow { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7; margin-bottom: 6px; }
+    .wake-number { font-family: 'DM Serif Display', Georgia, serif; font-size: 48px; font-weight: 400; line-height: 1; margin-bottom: 6px; }
+    .wake-label { font-size: 14px; opacity: 0.8; }
+    .audit-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
+    .audit-stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; }
+    .audit-stat-label { font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+    .audit-stat-value { font-size: 22px; font-weight: 500; color: var(--text-primary); }
+    .sub-verdict-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1rem; }
+    .sub-verdict-header { background: var(--text-primary); color: var(--bg); padding: 1rem 1.25rem; }
+    .sub-verdict-header-eyebrow { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.5; margin-bottom: 4px; }
+    .sub-verdict-header-title { font-family: 'DM Serif Display', Georgia, serif; font-size: 18px; font-weight: 400; font-style: italic; }
+    .sub-item-list { padding: 0; list-style: none; }
+    .sub-verdict-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 1.25rem; border-bottom: 1px solid var(--border); gap: 12px; }
+    .sub-verdict-item:last-child { border-bottom: none; }
+    .sub-verdict-item-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+    .sub-verdict-dot { flex-shrink: 0; width: 8px; height: 8px; border-radius: 50%; }
+    .dot-cut { background: var(--danger); } .dot-keep { background: var(--success); } .dot-review { background: #b97c2b; }
+    .sub-verdict-name { font-size: 14px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sub-verdict-reason { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+    .sub-verdict-amount { font-size: 14px; font-weight: 500; color: var(--text-primary); white-space: nowrap; }
+    .sub-verdict-tag { font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
+    .tag-cut { background: #fce8e5; color: var(--danger); } .tag-keep { background: #e6f3ec; color: var(--success); } .tag-review { background: #fdf0dc; color: #8a5c10; }
+    .audit-copy-btn { width: 100%; background: none; border: 1px solid var(--border-strong); border-radius: var(--radius-md); font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; color: var(--text-secondary); padding: 10px; cursor: pointer; transition: background 0.12s; }
+    .audit-copy-btn:hover { background: var(--surface); }
+    .audit-copy-btn.copied { color: var(--success); border-color: var(--success); }
+
+    /* Page footer */
+    .page-footer { text-align: center; margin-top: 3rem; font-size: 12px; color: var(--text-tertiary); line-height: 1.8; }
+    .page-footer a { color: var(--text-tertiary); }
+
+    @media (max-width: 400px) {
+      .hero-title { font-size: 28px; }
+      .input-row { grid-template-columns: 1fr; }
+      .card-stats { grid-template-columns: 1fr 1fr; }
+      .stat-cell:nth-child(3) { grid-column: 1 / -1; border-right: none; border-top: 1px solid var(--border); }
+      .sub-row { grid-template-columns: 1fr 80px 32px; }
+      .sub-row select { display: none; }
+      .email-row { flex-direction: column; }
+      .email-submit { height: 44px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Restored data banner -->
+  <div class="saved-banner" id="saved-banner">
+    <span class="saved-dot"></span>
+    <span>Your data has been restored from your last visit.</span>
+    <span class="saved-banner-right">
+      <button class="clear-btn" onclick="clearAllData()">Clear &amp; start over</button>
+    </span>
+  </div>
+
+  <!-- ── TOOL 1: LOUD BUDGET ── -->
+  <div class="hero">
+    <p class="hero-eyebrow">A free tool by YOUR HANDLE HERE</p>
+    <h1 class="hero-title">The Loud Budget Check</h1>
+    <p class="hero-sub">Know your numbers. Say them out loud. Own them.</p>
+  </div>
+
+  <div class="section">
+    <div class="input-row">
+      <div class="input-group">
+        <span class="section-label">Monthly take-home (£)</span>
+        <input type="number" id="income" placeholder="e.g. 2800" min="0" inputmode="numeric" oninput="saveData()" />
+      </div>
+      <div class="input-group">
+        <span class="section-label">Savings target (£)</span>
+        <input type="number" id="savings" placeholder="e.g. 300" min="0" inputmode="numeric" oninput="saveData()" />
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <span class="section-label">Your fixed costs</span>
+    <div class="expense-list" id="expense-list">
+      <div class="expense-row">
+        <input type="text" value="Rent / mortgage" oninput="saveData()" />
+        <input type="number" placeholder="£" min="0" inputmode="numeric" oninput="saveData()" />
+        <button class="remove-btn" onclick="removeRow(this)" aria-label="Remove">×</button>
+      </div>
+      <div class="expense-row">
+        <input type="text" value="Bills &amp; utilities" oninput="saveData()" />
+        <input type="number" placeholder="£" min="0" inputmode="numeric" oninput="saveData()" />
+        <button class="remove-btn" onclick="removeRow(this)" aria-label="Remove">×</button>
+      </div>
+      <div class="expense-row">
+        <input type="text" value="Transport" oninput="saveData()" />
+        <input type="number" placeholder="£" min="0" inputmode="numeric" oninput="saveData()" />
+        <button class="remove-btn" onclick="removeRow(this)" aria-label="Remove">×</button>
+      </div>
+      <div class="expense-row">
+        <input type="text" value="Food &amp; groceries" oninput="saveData()" />
+        <input type="number" placeholder="£" min="0" inputmode="numeric" oninput="saveData()" />
+        <button class="remove-btn" onclick="removeRow(this)" aria-label="Remove">×</button>
+      </div>
+      <div class="expense-row">
+        <input type="text" value="Subscriptions" oninput="saveData()" />
+        <input type="number" placeholder="£" min="0" inputmode="numeric" oninput="saveData()" />
+        <button class="remove-btn" onclick="removeRow(this)" aria-label="Remove">×</button>
+      </div>
+    </div>
+    <button class="add-btn" onclick="addRow()">+ add a cost</button>
+  </div>
+
+  <button class="cta-btn" onclick="calculate()">Generate my loud budget →</button>
+
+  <div class="result-card" id="result-card">
+    <div class="card-top">
+      <p class="card-eyebrow">Your financial boundaries</p>
+      <p class="card-title">Loud Budget</p>
+      <p class="card-date" id="card-date"></p>
+    </div>
+    <div class="card-stats">
+      <div class="stat-cell"><p class="stat-cell-label">Take-home</p><p class="stat-cell-value" id="stat-income">—</p></div>
+      <div class="stat-cell"><p class="stat-cell-label">Committed</p><p class="stat-cell-value" id="stat-committed">—</p></div>
+      <div class="stat-cell"><p class="stat-cell-label">Free money</p><p class="stat-cell-value" id="stat-free">—</p></div>
+    </div>
+    <div class="card-body">
+      <ul class="boundary-list" id="boundary-list"></ul>
+      <div class="verdict-block"><p class="verdict-text" id="verdict-text"></p></div>
+    </div>
+    <!-- Email capture -->
+    <div class="email-capture" id="ec-budget">
+      <p class="email-capture-eyebrow">Free from YOUR HANDLE HERE</p>
+      <p class="email-capture-title">Want a free monthly budget template?</p>
+      <p class="email-capture-sub">Drop your email and I'll send you the spreadsheet I actually use — no faff, no spam.</p>
+      <div class="email-row">
+        <input type="email" id="email-budget" placeholder="your@email.com" />
+        <button class="email-submit" id="esub-budget" onclick="submitEmail('budget')">Send it</button>
+      </div>
+      <p class="email-success" id="esuccess-budget">You're in — check your inbox.</p>
+      <p class="email-fine-print">No spam. Unsubscribe any time.</p>
+    </div>
+    <div class="card-footer">
+      <p class="brand-handle">YOUR HANDLE HERE</p>
+      <button class="copy-btn" id="copy-btn" onclick="copyCard()">Copy summary</button>
+    </div>
+  </div>
+
+  <!-- ── TOOL 2: SUBSCRIPTION AUDIT ── -->
+  <div class="tool-divider">
+    <div class="tool-divider-line"></div>
+    <span class="tool-divider-label">Tool 2</span>
+    <div class="tool-divider-line"></div>
+  </div>
+
+  <div class="audit-hero">
+    <h2 class="audit-hero-title">The Subscription Audit</h2>
+    <p class="audit-hero-sub">List everything you're paying for. Get the number that changes how you see it.</p>
+  </div>
+
+  <div class="section">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span class="section-label" style="margin-bottom:0;">Your subscriptions</span>
+      <span style="font-size:11px;color:var(--text-tertiary);">name · £/mo · how often used</span>
+    </div>
+    <div class="sub-list" id="sub-list">
+      <div class="sub-row">
+        <input type="text" value="Netflix" oninput="saveData()" />
+        <input type="number" placeholder="£/mo" min="0" inputmode="decimal" oninput="saveData()" />
+        <select aria-label="Usage" onchange="saveData()"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly" selected>Monthly</option><option value="rarely">Rarely</option><option value="never">Never</option></select>
+        <button class="remove-btn" onclick="removeSubRow(this)" aria-label="Remove">×</button>
+      </div>
+      <div class="sub-row">
+        <input type="text" value="Spotify" oninput="saveData()" />
+        <input type="number" placeholder="£/mo" min="0" inputmode="decimal" oninput="saveData()" />
+        <select aria-label="Usage" onchange="saveData()"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly" selected>Monthly</option><option value="rarely">Rarely</option><option value="never">Never</option></select>
+        <button class="remove-btn" onclick="removeSubRow(this)" aria-label="Remove">×</button>
+      </div>
+      <div class="sub-row">
+        <input type="text" value="Gym" oninput="saveData()" />
+        <input type="number" placeholder="£/mo" min="0" inputmode="decimal" oninput="saveData()" />
+        <select aria-label="Usage" onchange="saveData()"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly" selected>Monthly</option><option value="rarely">Rarely</option><option value="never">Never</option></select>
+        <button class="remove-btn" onclick="removeSubRow(this)" aria-label="Remove">×</button>
+      </div>
+      <div class="sub-row">
+        <input type="text" value="Amazon Prime" oninput="saveData()" />
+        <input type="number" placeholder="£/mo" min="0" inputmode="decimal" oninput="saveData()" />
+        <select aria-label="Usage" onchange="saveData()"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly" selected>Monthly</option><option value="rarely">Rarely</option><option value="never">Never</option></select>
+        <button class="remove-btn" onclick="removeSubRow(this)" aria-label="Remove">×</button>
+      </div>
+    </div>
+    <button class="add-btn" onclick="addSubRow()">+ add a subscription</button>
+  </div>
+
+  <button class="cta-btn" onclick="auditSubs()">Run my subscription audit →</button>
+
+  <div class="result-card" id="audit-result" style="margin-top:2rem;">
+    <div style="padding:1.5rem 1.5rem 0;"><div id="audit-wake-up-wrap"></div></div>
+    <div style="padding:1rem 1.5rem 0;"><div class="audit-stats" id="audit-stats"></div></div>
+    <div style="padding:0 1.5rem;">
+      <div class="sub-verdict-block" id="sub-verdict-block"></div>
+    </div>
+    <!-- Email capture -->
+    <div class="email-capture" id="ec-audit">
+      <p class="email-capture-eyebrow">Free from YOUR HANDLE HERE</p>
+      <p class="email-capture-title">Want a subscription tracker spreadsheet?</p>
+      <p class="email-capture-sub">I'll send you the exact template I use to stay on top of this every month.</p>
+      <div class="email-row">
+        <input type="email" id="email-audit" placeholder="your@email.com" />
+        <button class="email-submit" id="esub-audit" onclick="submitEmail('audit')">Send it</button>
+      </div>
+      <p class="email-success" id="esuccess-audit">You're in — check your inbox.</p>
+      <p class="email-fine-print">No spam. Unsubscribe any time.</p>
+    </div>
+    <div style="padding:0 1.5rem 1.25rem;">
+      <button class="audit-copy-btn" id="audit-copy-btn" onclick="copyAudit()">Copy audit summary</button>
+    </div>
+    <div class="card-footer">
+      <p class="brand-handle">YOUR HANDLE HERE</p>
+    </div>
+  </div>
+
+  <p class="page-footer">
+    Your data is saved on this device — nothing is ever sent anywhere.<br />
+    Made with intention by <a href="https://instagram.com/YOUR HANDLE HERE">YOUR HANDLE HERE</a>
+  </p>
+
+</div>
+<script>
+  const STORAGE_KEY = 'loud-budget-v1';
+
+  function fmt(n) { return '£' + Math.round(n).toLocaleString('en-GB'); }
+
+  /* ── localStorage ── */
+  function saveData() {
+    try {
+      const expenses = [];
+      document.querySelectorAll('.expense-row').forEach(r => {
+        expenses.push({ name: r.querySelector('input[type="text"]').value, amount: r.querySelector('input[type="number"]').value });
+      });
+      const subs = [];
+      document.querySelectorAll('.sub-row').forEach(r => {
+        subs.push({ name: r.querySelector('input[type="text"]').value, amount: r.querySelector('input[type="number"]').value, usage: r.querySelector('select').value });
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        income: document.getElementById('income').value,
+        savings: document.getElementById('savings').value,
+        expenses, subs
+      }));
+    } catch(e) {}
+  }
+
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+      const d = JSON.parse(raw);
+      const hasContent = d.income || d.savings ||
+        (d.expenses || []).some(e => e.amount) ||
+        (d.subs || []).some(s => s.amount);
+      if (!hasContent) return false;
+
+      if (d.income) document.getElementById('income').value = d.income;
+      if (d.savings) document.getElementById('savings').value = d.savings;
+
+      if (d.expenses && d.expenses.length) {
+        const el = document.getElementById('expense-list');
+        el.innerHTML = '';
+        d.expenses.forEach(e => {
+          const row = document.createElement('div');
+          row.className = 'expense-row';
+          row.innerHTML = makeExpRow(e.name, e.amount);
+          el.appendChild(row);
+        });
+      }
+      if (d.subs && d.subs.length) {
+        const sl = document.getElementById('sub-list');
+        sl.innerHTML = '';
+        d.subs.forEach(s => {
+          const row = document.createElement('div');
+          row.className = 'sub-row';
+          row.innerHTML = makeSubRow(s.name, s.amount, s.usage);
+          sl.appendChild(row);
+        });
+      }
+      document.getElementById('saved-banner').classList.add('visible');
+      return true;
+    } catch(e) { return false; }
+  }
+
+  function clearAllData() {
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+    document.getElementById('income').value = '';
+    document.getElementById('savings').value = '';
+    const el = document.getElementById('expense-list');
+    el.innerHTML = '';
+    [['Rent / mortgage'],['Bills & utilities'],['Transport'],['Food & groceries'],['Subscriptions']].forEach(([n]) => {
+      const r = document.createElement('div'); r.className = 'expense-row'; r.innerHTML = makeExpRow(n,''); el.appendChild(r);
+    });
+    const sl = document.getElementById('sub-list');
+    sl.innerHTML = '';
+    [['Netflix'],['Spotify'],['Gym'],['Amazon Prime']].forEach(([n]) => {
+      const r = document.createElement('div'); r.className = 'sub-row'; r.innerHTML = makeSubRow(n,'','monthly'); sl.appendChild(r);
+    });
+    document.getElementById('saved-banner').classList.remove('visible');
+    document.getElementById('result-card').classList.remove('visible');
+    document.getElementById('audit-result').classList.remove('visible');
+  }
+
+  function makeExpRow(name, amount) {
+    const n = (name||'').replace(/&amp;/g,'&').replace(/"/g,'&quot;');
+    return '<input type="text" value="'+n+'" oninput="saveData()" />' +
+      '<input type="number" placeholder="£" min="0" inputmode="numeric" value="'+(amount||'')+'" oninput="saveData()" />' +
+      '<button class="remove-btn" onclick="removeRow(this)" aria-label="Remove">×</button>';
+  }
+
+  function makeSubRow(name, amount, usage) {
+    const n = (name||'').replace(/"/g,'&quot;');
+    const opts = ['daily','weekly','monthly','rarely','never'].map(v =>
+      '<option value="'+v+'"'+(v===usage?' selected':'')+'>'+v[0].toUpperCase()+v.slice(1)+'</option>'
+    ).join('');
+    return '<input type="text" value="'+n+'" oninput="saveData()" />' +
+      '<input type="number" placeholder="£/mo" min="0" inputmode="decimal" value="'+(amount||'')+'" oninput="saveData()" />' +
+      '<select aria-label="Usage" onchange="saveData()">'+opts+'</select>' +
+      '<button class="remove-btn" onclick="removeSubRow(this)" aria-label="Remove">×</button>';
+  }
+
+  /* ── Budget ── */
+  function addRow() {
+    const el = document.getElementById('expense-list');
+    const r = document.createElement('div'); r.className = 'expense-row'; r.innerHTML = makeExpRow('','');
+    el.appendChild(r); r.querySelector('input[type="text"]').focus(); saveData();
+  }
+  function removeRow(btn) {
+    if (document.querySelectorAll('.expense-row').length > 1) { btn.closest('.expense-row').remove(); saveData(); }
+  }
+
+  function calculate() {
+    const income = parseFloat(document.getElementById('income').value)||0;
+    const savings = parseFloat(document.getElementById('savings').value)||0;
+    let expenses=[], totalExp=0;
+    document.querySelectorAll('.expense-row').forEach(r => {
+      const name = r.querySelector('input[type="text"]').value.trim();
+      const amount = parseFloat(r.querySelector('input[type="number"]').value)||0;
+      if (name && amount>0) { expenses.push({name,amount}); totalExp+=amount; }
+    });
+    if (!income) { alert('Please enter your monthly take-home pay first.'); document.getElementById('income').focus(); return; }
+
+    const committed=totalExp+savings, free=income-committed;
+    const savPct=income>0?Math.round(savings/income*100):0;
+    const frePct=income>0?Math.round(free/income*100):0;
+
+    document.getElementById('stat-income').textContent=fmt(income);
+    document.getElementById('stat-committed').textContent=fmt(committed);
+    const fEl=document.getElementById('stat-free');
+    fEl.textContent=fmt(free);
+    fEl.className='stat-cell-value'+(free<0?' danger':free>income*0.2?' success':'');
+    document.getElementById('card-date').textContent=new Date().toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+
+    const list=document.getElementById('boundary-list'); list.innerHTML='';
+    if (savings>0) addBI(list,false,'I pay myself <strong>'+fmt(savings)+'</strong> first — every month, before anything else. That\'s '+savPct+'% of my income, and it\'s non-negotiable.');
+    expenses.forEach(e=>{
+      const p=income>0?Math.round(e.amount/income*100):0;
+      addBI(list,false,e.name[0].toUpperCase()+e.name.slice(1)+': <strong>'+fmt(e.amount)+'</strong> — '+p+'% of my income. Accounted for. Done.');
+    });
+    if (free>0) addBI(list,false,'That leaves <strong>'+fmt(free)+'</strong> of flexible money — '+frePct+'% of my income, spent entirely on my own terms.');
+    else if (free<0) addBI(list,true,'My outgoings exceed my income by '+fmt(Math.abs(free))+'. This budget needs a renegotiation — and that\'s not a failure, it\'s just the truth.');
+
+    let verdict;
+    if (free<0) verdict="The numbers don't lie — and knowing this is the first step. Something has to change, and now I know what.";
+    else if (savPct>=20) verdict="Saving "+savPct+"% of my income. Not luck. Not an accident. A boundary I set and kept.";
+    else if (savPct>=10) verdict="Every pound saved is a future decision I've already made for myself.";
+    else if (frePct>=30) verdict="I have real breathing room — and I'm choosing what I do with it. That's loud budgeting.";
+    else verdict="Knowing exactly where every pound goes is the loudest financial move I make.";
+    document.getElementById('verdict-text').textContent=verdict;
+
+    const card=document.getElementById('result-card');
+    card.classList.add('visible');
+    setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'start'}),50);
+  }
+
+  function addBI(list,warn,html) {
+    const li=document.createElement('li');
+    li.className='boundary-item'+(warn?' warn':'');
+    li.innerHTML='<span class="boundary-dot"></span><span>'+html+'</span>';
+    list.appendChild(li);
+  }
+
+  function copyCard() {
+    const income=parseFloat(document.getElementById('income').value)||0;
+    const savings=parseFloat(document.getElementById('savings').value)||0;
+    const savPct=income>0?Math.round(savings/income*100):0;
+    const now=new Date().toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+    let lines=['MY LOUD BUDGET — '+now.toUpperCase(),'','Take-home: '+fmt(income)];
+    if (savings>0){lines.push('');lines.push('I pay myself '+fmt(savings)+' first ('+savPct+'%) — non-negotiable.');}
+    let total=savings;
+    document.querySelectorAll('.expense-row').forEach(r=>{
+      const name=r.querySelector('input[type="text"]').value.trim();
+      const amount=parseFloat(r.querySelector('input[type="number"]').value)||0;
+      if (name&&amount>0){lines.push(name+': '+fmt(amount));total+=amount;}
+    });
+    const free=income-total;
+    lines.push('');
+    lines.push(free>=0?'Flexible money: '+fmt(free):'Shortfall: '+fmt(Math.abs(free))+' — time to renegotiate.');
+    lines.push('','"'+document.getElementById('verdict-text').textContent+'"','','— The Loud Budget Check by YOUR HANDLE HERE');
+    navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+      const btn=document.getElementById('copy-btn');
+      btn.textContent='Copied!';btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy summary';btn.classList.remove('copied');},2500);
+    }).catch(()=>alert('Copy failed — try selecting the text manually.'));
+  }
+
+  /* ── Subscription audit ── */
+  function addSubRow() {
+    const sl=document.getElementById('sub-list');
+    const r=document.createElement('div');r.className='sub-row';r.innerHTML=makeSubRow('','','monthly');
+    sl.appendChild(r);r.querySelector('input[type="text"]').focus();saveData();
+  }
+  function removeSubRow(btn) {
+    if (document.querySelectorAll('.sub-row').length>1){btn.closest('.sub-row').remove();saveData();}
+  }
+
+  function auditSubs() {
+    let subs=[];
+    document.querySelectorAll('.sub-row').forEach(r=>{
+      const name=r.querySelector('input[type="text"]').value.trim();
+      const amount=parseFloat(r.querySelector('input[type="number"]').value)||0;
+      const usage=r.querySelector('select').value;
+      if (name&&amount>0) subs.push({name,amount,usage});
+    });
+    if (!subs.length){alert('Add at least one subscription to audit.');return;}
+
+    const totalMo=subs.reduce((s,x)=>s+x.amount,0);
+    const totalYr=totalMo*12;
+    const cutS=subs.filter(s=>s.usage==='never'||s.usage==='rarely');
+    const keepS=subs.filter(s=>s.usage==='daily'||s.usage==='weekly');
+    const revS=subs.filter(s=>s.usage==='monthly');
+    const couldSaveYr=cutS.reduce((s,x)=>s+x.amount,0)*12;
+
+    document.getElementById('audit-wake-up-wrap').innerHTML=
+      '<div class="audit-wake-up"><p class="wake-eyebrow">Your subscriptions cost you</p><p class="wake-number">'+fmt(totalYr)+'</p><p class="wake-label">every single year</p></div>';
+
+    document.getElementById('audit-stats').innerHTML=
+      '<div class="audit-stat"><p class="audit-stat-label">Per month</p><p class="audit-stat-value">'+fmt(totalMo)+'</p></div>'+
+      '<div class="audit-stat"><p class="audit-stat-label">You could cut</p><p class="audit-stat-value" style="color:var(--success)">'+fmt(couldSaveYr)+'/yr</p></div>';
+
+    let vh='<div class="sub-verdict-header"><p class="sub-verdict-header-eyebrow">Subscription by subscription</p><p class="sub-verdict-header-title">';
+    if (!cutS.length) vh+='Every subscription is earning its place. That\'s rare — and impressive.';
+    else if (couldSaveYr>=500) vh+=fmt(couldSaveYr)+' a year on things you barely use. That\'s not a subscription problem — that\'s a decision waiting to be made.';
+    else vh+='A few things here don\'t deserve your money. Cancel them and don\'t look back.';
+    vh+='</p></div><ul class="sub-item-list">';
+
+    [...cutS.map(s=>({...s,v:'cut'})),...revS.map(s=>({...s,v:'review'})),...keepS.map(s=>({...s,v:'keep'}))].forEach(s=>{
+      const dc=s.v==='cut'?'dot-cut':s.v==='keep'?'dot-keep':'dot-review';
+      const tc=s.v==='cut'?'tag-cut':s.v==='keep'?'tag-keep':'tag-review';
+      const tl=s.v==='cut'?'Cancel it':s.v==='keep'?'Worth it':'Review it';
+      const reasons={cut:{never:'You never use this.',rarely:'You barely touch it.'},review:{monthly:'Used occasionally — is it worth '+fmt(s.amount*12)+'/yr?'},keep:{daily:'You use this daily. Keep it.',weekly:'Regular use — earning its place.'}};
+      const reason=(reasons[s.v]&&reasons[s.v][s.usage])||'';
+      vh+='<li class="sub-verdict-item"><div class="sub-verdict-item-left"><span class="sub-verdict-dot '+dc+'"></span><div><p class="sub-verdict-name">'+s.name+'</p><p class="sub-verdict-reason">'+reason+'</p></div></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0;"><span class="sub-verdict-amount">'+fmt(s.amount)+'/mo</span><span class="sub-verdict-tag '+tc+'">'+tl+'</span></div></li>';
+    });
+    vh+='</ul>';
+    document.getElementById('sub-verdict-block').innerHTML=vh;
+
+    const card=document.getElementById('audit-result');
+    card.classList.add('visible');
+    setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'start'}),50);
+  }
+
+  function copyAudit() {
+    let subs=[];
+    document.querySelectorAll('.sub-row').forEach(r=>{
+      const name=r.querySelector('input[type="text"]').value.trim();
+      const amount=parseFloat(r.querySelector('input[type="number"]').value)||0;
+      const usage=r.querySelector('select').value;
+      if (name&&amount>0) subs.push({name,amount,usage});
+    });
+    const totalMo=subs.reduce((s,x)=>s+x.amount,0);
+    const now=new Date().toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+    let lines=['MY SUBSCRIPTION AUDIT — '+now.toUpperCase(),'',
+      'Total: '+fmt(totalMo)+'/mo = '+fmt(totalMo*12)+'/yr',''];
+    subs.forEach(s=>{
+      const v=(s.usage==='never'||s.usage==='rarely')?'CANCEL':s.usage==='monthly'?'REVIEW':'KEEP';
+      lines.push(v+' | '+s.name+' — '+fmt(s.amount)+'/mo');
+    });
+    lines.push('','— The Subscription Audit by YOUR HANDLE HERE');
+    navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+      const btn=document.getElementById('audit-copy-btn');
+      btn.textContent='Copied!';btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy audit summary';btn.classList.remove('copied');},2500);
+    }).catch(()=>alert('Copy failed — try selecting the text manually.'));
+  }
+
+  /* ── Email capture ──
+     Replace the fetch() call below with your actual email provider endpoint.
+
+     Kit (formerly ConvertKit) example:
+       fetch('https://app.kit.com/forms/YOUR_FORM_ID/subscriptions', {
+         method:'POST', headers:{'Content-Type':'application/json'},
+         body: JSON.stringify({ email_address: email })
+       });
+
+     Mailchimp example (requires a proxy or serverless function — see their docs).
+  */
+  function submitEmail(tool) {
+    const input=document.getElementById('email-'+tool);
+    const email=input.value.trim();
+    if (!email||!email.includes('@')){input.focus();return;}
+
+    // ── PASTE YOUR EMAIL PROVIDER CODE HERE ──
+    // fetch('https://...', { method:'POST', ... });
+
+    document.getElementById('esuccess-'+tool).style.display='block';
+    input.value='';
+    input.disabled=true;
+    document.getElementById('esub-'+tool).disabled=true;
+  }
+
+  /* ── Init ── */
+  window.addEventListener('DOMContentLoaded', loadData);
+</script>
+</body>
+</html>
