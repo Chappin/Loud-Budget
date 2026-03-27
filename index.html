@@ -254,7 +254,7 @@
       <p class="email-fine-print">No spam. Unsubscribe any time.</p>
     </div>
     <div class="card-footer">
-      <p class="brand-handle">YOUR HANDLE HERE</p>
+      <p class="brand-handle">@DannyChappin</p>
       <button class="copy-btn" id="copy-btn" onclick="copyCard()">Copy summary</button>
     </div>
   </div>
@@ -315,7 +315,7 @@
     </div>
     <!-- Email capture -->
     <div class="email-capture" id="ec-audit">
-      <p class="email-capture-eyebrow">Free from YOUR HANDLE HERE</p>
+      <p class="email-capture-eyebrow">Free from @DannyChappin</p>
       <p class="email-capture-title">Want a subscription tracker spreadsheet?</p>
       <p class="email-capture-sub">I'll send you the exact template I use to stay on top of this every month.</p>
       <div class="email-row">
@@ -335,7 +335,7 @@
 
   <p class="page-footer">
     Your data is saved on this device — nothing is ever sent anywhere.<br />
-    Made with intention by <a href="https://instagram.com/YOUR HANDLE HERE">YOUR HANDLE HERE</a>
+    Made with intention by <a href="https://instagram.com/@DannyChappin">@DannyChappin</a>
   </p>
 
 </div>
@@ -515,7 +515,7 @@
     const free=income-total;
     lines.push('');
     lines.push(free>=0?'Flexible money: '+fmt(free):'Shortfall: '+fmt(Math.abs(free))+' — time to renegotiate.');
-    lines.push('','"'+document.getElementById('verdict-text').textContent+'"','','— The Loud Budget Check by YOUR HANDLE HERE');
+    lines.push('','"'+document.getElementById('verdict-text').textContent+'"','','— The Loud Budget Check by @DannyChappin');
     navigator.clipboard.writeText(lines.join('\n')).then(()=>{
       const btn=document.getElementById('copy-btn');
       btn.textContent='Copied!';btn.classList.add('copied');
