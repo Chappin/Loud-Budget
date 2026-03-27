@@ -85,19 +85,6 @@
     .copy-btn:hover { background: var(--bg); }
     .copy-btn.copied { color: var(--success); border-color: var(--success); }
 
-    /* Email capture */
-    .email-capture { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin: 0 1.5rem 1.25rem; }
-    .email-capture-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; }
-    .email-capture-title { font-family: 'DM Serif Display', Georgia, serif; font-size: 18px; color: var(--text-primary); margin-bottom: 4px; line-height: 1.3; }
-    .email-capture-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.5; }
-    .email-row { display: flex; gap: 8px; }
-    .email-row input[type="email"] { flex: 1; height: 40px; font-size: 14px; }
-    .email-submit { background: var(--text-primary); color: var(--bg); border: none; border-radius: var(--radius-md); font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; font-weight: 500; padding: 0 16px; cursor: pointer; white-space: nowrap; transition: opacity 0.15s; height: 40px; }
-    .email-submit:hover { opacity: 0.85; }
-    .email-submit:disabled { opacity: 0.4; cursor: default; }
-    .email-success { display: none; font-size: 13px; color: var(--success); margin-top: 8px; font-style: italic; }
-    .email-fine-print { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; }
-
     /* Tool divider */
     .tool-divider { margin: 3rem 0 2.5rem; display: flex; align-items: center; gap: 1rem; }
     .tool-divider-line { flex: 1; height: 1px; background: var(--border); }
@@ -159,7 +146,6 @@
       .email-submit { height: 44px; }
     }
   </style>
-  <script src="https://f.convertkit.com/ckjs/ck.5.js"></script>
 </head>
 <body>
 <div class="page">
@@ -242,18 +228,6 @@
       <ul class="boundary-list" id="boundary-list"></ul>
       <div class="verdict-block"><p class="verdict-text" id="verdict-text"></p></div>
     </div>
-    <!-- Email capture -->
-    <div class="email-capture" id="ec-budget">
-      <p class="email-capture-eyebrow">Free from @DannyChappin</p>
-      <p class="email-capture-title">Want a free monthly budget template?</p>
-      <p class="email-capture-sub">Drop your email and I'll send you the spreadsheet I actually use — no faff, no spam.</p>
-      <div class="email-row">
-        <input type="email" id="email-budget" placeholder="your@email.com" />
-        <button class="email-submit" id="esub-budget" onclick="submitEmail('budget')">Send it</button>
-      </div>
-      <p class="email-success" id="esuccess-budget">You're in — check your inbox.</p>
-      <p class="email-fine-print">No spam. Unsubscribe any time.</p>
-    </div>
     <div class="card-footer">
       <p class="brand-handle">@DannyChappin</p>
       <button class="copy-btn" id="copy-btn" onclick="copyCard()">Copy summary</button>
@@ -313,18 +287,6 @@
     <div style="padding:1rem 1.5rem 0;"><div class="audit-stats" id="audit-stats"></div></div>
     <div style="padding:0 1.5rem;">
       <div class="sub-verdict-block" id="sub-verdict-block"></div>
-    </div>
-    <!-- Email capture -->
-    <div class="email-capture" id="ec-audit">
-      <p class="email-capture-eyebrow">Free from @DannyChappin</p>
-      <p class="email-capture-title">Want a subscription tracker spreadsheet?</p>
-      <p class="email-capture-sub">I'll send you the exact template I use to stay on top of this every month.</p>
-      <div class="email-row">
-        <input type="email" id="email-audit" placeholder="your@email.com" />
-        <button class="email-submit" id="esub-audit" onclick="submitEmail('audit')">Send it</button>
-      </div>
-      <p class="email-success" id="esuccess-audit">You're in — check your inbox.</p>
-      <p class="email-fine-print">No spam. Unsubscribe any time.</p>
     </div>
     <div style="padding:0 1.5rem 1.25rem;">
       <button class="audit-copy-btn" id="audit-copy-btn" onclick="copyAudit()">Copy audit summary</button>
@@ -602,35 +564,6 @@
       btn.textContent='Copied!';btn.classList.add('copied');
       setTimeout(()=>{btn.textContent='Copy audit summary';btn.classList.remove('copied');},2500);
     }).catch(()=>alert('Copy failed — try selecting the text manually.'));
-  }
-
-  /* ── Email capture — Kit form ID: 9255823 ── */
-  function submitEmail(tool) {
-    const input = document.getElementById('email-' + tool);
-    const email = input.value.trim();
-    if (!email || !email.includes('@')) { input.focus(); return; }
-
-    const btn = document.getElementById('esub-' + tool);
-    btn.textContent = 'Sending…';
-    btn.disabled = true;
-    input.disabled = true;
-
-    // Use Kit's official fetch-based submission via their ck.5.js script
-    const data = new FormData();
-    data.append('email_address', email);
-
-    fetch('https://app.kit.com/forms/9255823/subscriptions', {
-      method: 'POST',
-      body: data
-    })
-    .then(() => {
-      document.getElementById('esuccess-' + tool).style.display = 'block';
-      input.value = '';
-    })
-    .catch(() => {
-      document.getElementById('esuccess-' + tool).style.display = 'block';
-      input.value = '';
-    });
   }
 
   /* ── Init ── */
