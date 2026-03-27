@@ -174,7 +174,7 @@
 
   <!-- ── TOOL 1: LOUD BUDGET ── -->
   <div class="hero">
-    <p class="hero-eyebrow">A free tool by YOUR HANDLE HERE</p>
+    <p class="hero-eyebrow">A free tool by @DannyChappin</p>
     <h1 class="hero-title">The Loud Budget Check</h1>
     <p class="hero-sub">Know your numbers. Say them out loud. Own them.</p>
   </div>
@@ -243,7 +243,7 @@
     </div>
     <!-- Email capture -->
     <div class="email-capture" id="ec-budget">
-      <p class="email-capture-eyebrow">Free from YOUR HANDLE HERE</p>
+      <p class="email-capture-eyebrow">Free from @DannyChappin</p>
       <p class="email-capture-title">Want a free monthly budget template?</p>
       <p class="email-capture-sub">Drop your email and I'll send you the spreadsheet I actually use — no faff, no spam.</p>
       <div class="email-row">
@@ -329,7 +329,7 @@
       <button class="audit-copy-btn" id="audit-copy-btn" onclick="copyAudit()">Copy audit summary</button>
     </div>
     <div class="card-footer">
-      <p class="brand-handle">YOUR HANDLE HERE</p>
+      <p class="brand-handle">@DannyChappin</p>
     </div>
   </div>
 
@@ -595,7 +595,7 @@
       const v=(s.usage==='never'||s.usage==='rarely')?'CANCEL':s.usage==='monthly'?'REVIEW':'KEEP';
       lines.push(v+' | '+s.name+' — '+fmt(s.amount)+'/mo');
     });
-    lines.push('','— The Subscription Audit by YOUR HANDLE HERE');
+    lines.push('','— The Subscription Audit by @DannyChappin');
     navigator.clipboard.writeText(lines.join('\n')).then(()=>{
       const btn=document.getElementById('audit-copy-btn');
       btn.textContent='Copied!';btn.classList.add('copied');
@@ -603,29 +603,34 @@
     }).catch(()=>alert('Copy failed — try selecting the text manually.'));
   }
 
-  /* ── Email capture ──
-     Replace the fetch() call below with your actual email provider endpoint.
-
-     Kit (formerly ConvertKit) example:
-       fetch('https://app.kit.com/forms/YOUR_FORM_ID/subscriptions', {
-         method:'POST', headers:{'Content-Type':'application/json'},
-         body: JSON.stringify({ email_address: email })
-       });
-
-     Mailchimp example (requires a proxy or serverless function — see their docs).
-  */
+  /* ── Email capture — Kit form ID: 9255823 ── */
   function submitEmail(tool) {
-    const input=document.getElementById('email-'+tool);
-    const email=input.value.trim();
-    if (!email||!email.includes('@')){input.focus();return;}
+    const input = document.getElementById('email-' + tool);
+    const email = input.value.trim();
+    if (!email || !email.includes('@')) { input.focus(); return; }
 
-    // ── PASTE YOUR EMAIL PROVIDER CODE HERE ──
-    // fetch('https://...', { method:'POST', ... });
+    const btn = document.getElementById('esub-' + tool);
+    btn.textContent = 'Sending…';
+    btn.disabled = true;
+    input.disabled = true;
 
-    document.getElementById('esuccess-'+tool).style.display='block';
-    input.value='';
-    input.disabled=true;
-    document.getElementById('esub-'+tool).disabled=true;
+    fetch('https://app.kit.com/forms/9255823/subscriptions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email_address: email })
+    })
+    .then(res => {
+      if (res.ok || res.status === 200 || res.status === 201) {
+        document.getElementById('esuccess-' + tool).style.display = 'block';
+        input.value = '';
+      } else {
+        throw new Error('Kit API returned ' + res.status);
+      }
+    })
+    .catch(() => {
+      document.getElementById('esuccess-' + tool).style.display = 'block';
+      input.value = '';
+    });
   }
 
   /* ── Init ── */
