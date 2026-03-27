@@ -614,23 +614,34 @@
     btn.disabled = true;
     input.disabled = true;
 
-    fetch('https://app.kit.com/forms/9255823/subscriptions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email_address: email })
-    })
-    .then(res => {
-      if (res.ok || res.status === 200 || res.status === 201) {
-        document.getElementById('esuccess-' + tool).style.display = 'block';
-        input.value = '';
-      } else {
-        throw new Error('Kit API returned ' + res.status);
-      }
-    })
-    .catch(() => {
+    // Kit blocks direct fetch() calls from external pages (CORS restriction).
+    // Submit via a hidden form + iframe instead — Kit receives it in the background.
+    const frameName = 'kit-frame-' + tool;
+    const frame = document.createElement('iframe');
+    frame.name = frameName;
+    frame.style.display = 'none';
+    document.body.appendChild(frame);
+
+    const form = document.createElement('form');
+    form.action = 'https://app.kit.com/forms/9255823/subscriptions';
+    form.method = 'POST';
+    form.target = frameName;
+    form.style.display = 'none';
+
+    const emailField = document.createElement('input');
+    emailField.type = 'hidden';
+    emailField.name = 'email_address';
+    emailField.value = email;
+    form.appendChild(emailField);
+
+    document.body.appendChild(form);
+    form.submit();
+
+    setTimeout(() => {
       document.getElementById('esuccess-' + tool).style.display = 'block';
       input.value = '';
-    });
+      document.body.removeChild(form);
+    }, 800);
   }
 
   /* ── Init ── */
